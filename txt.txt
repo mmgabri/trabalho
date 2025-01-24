@@ -1,0 +1,45 @@
+Transação afetada: 
+ 644
+ 
+O que ela faz: 
+ - Realiza ajuste de valor de transação de compra Mastercard. É estornado o valor original, e realizado um novo débito com o valor ajustado.
+ - Não é validado limite
+ - Não é validado saldo
+ - Não é validado Fraudes
+
+
+Cenário em que a bandeira dispara esta transação:
+ 1. Quando o time do BKC Itaú cadastra uma disputa (Chargeback) na ferramenta Mastercard Connect
+ 2. Ajuste de valor de transação comandado pela bandeira/adquirentes d-n. (após corte do base 2). Há bastante transações da Uber neste cenário.
+
+ 
+Cacateristica: 
+ - ONLINE: Apesar de no extrato gerar os 2 lançamentos de débito e crédito, o arquivo que é usado no contábil (TCX) é gravado apenas o lançamento do crédito (estorno do valor original)
+ - BATCH: 
+    - Na madrugada por volta das 3h, é processado o arquivo contábil que foi gravado no online (TCX). Neste momento o que foi processo no batch é o que aparece no extrato, ou seja, os 2 lançamentos feito no online "somem" e aparece apenas o lançamento do crédito.
+    - O arquivo base 2 enviado pela Mastercard é processado as 9h30, e a partir dele é gerado 2 arquivos:
+	   1. MAB: Contem os 2 lançamentos (débito e crédito). Este arquivo entra na malha batch para fazer o contábil em definitivo.
+	   2. LTF: Contem os 2 lançamentos (débito e crédito). Este arquivo entra na malha batch para para atualizar o extrato com os 2 lançamentos, com término previsto para as 12h.
+ 
+ 
+Sobre a Alteração:
+ - Motivo: Realease de Bandeiras - Pré Autorização
+ - Alterado o tamanho (de 13 para 26) do campo DE 61 da ISO para o mti 0420, com alteração nos módulos:
+   1- Módulo assembler de configuração da ISO que fica instalado no ambiente CICS para realizar o parse da ISO.
+   2- Books dos módulos Cobol (ambiente GRBE) que processam a transação
+   
+Motivo do Erro:
+ - Os módulos Cobol do ambiente GRBE tiveram o deploy antes do módulo Assembler de configuração da ISO do CICS.   
+ - Somente depois de aprocimadamente 1 minuto após o deploy dos módulos Cobol (GRBE) que foi feito o deploy do módulo Assembler
+ - Ainda precisamos entender se sempre foi assim, ou aconteceu algo extraordinário
+ - Neste intervalo, tiveram 5 transações 644 com layout do trancode incompativel devido ao problema de sincronismo de deploy (CICS enviado layout antigo para os módulos GRBE já com o novo layout).
+ - Isso fez com que o campo usado para fazer o débito ficasse desposicionado
+ 
+Próximos passos:
+ - Realizar Posmorten avalidando:
+   1. Negar e incluir alertas para transações com valores altos
+   2. Incluir consist~encias na ISO
+   3. Entender o problema do sincrnismo dos deploys entre CICS e GRBE (sempre foi assim, ou aconteceu algo extraordinário ?)
+   4. Modernizar a transação 644
+   
+  
