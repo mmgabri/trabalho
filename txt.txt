@@ -1,45 +1,46 @@
-Transação afetada: 
- 644
- 
-O que ela faz: 
- - Realiza ajuste de valor de transação de compra Mastercard. É estornado o valor original, e realizado um novo débito com o valor ajustado.
- - Não é validado limite
- - Não é validado saldo
- - Não é validado Fraudes
+1. Cartão múltiplo NPC - BIN 8 digitos
+   - Testes:
+     - Até agora foi nos passado apenas o PAN de dois BINS (Master e Visa). Para o BIN da Visa, a Janine já conseguiu aprovar uma transação CNP. 
+	 - Precisamos do cartão fisico, para validarmos as alterações dos componentes de segurança (SC7) na parte de validação do chip.
+	 - Precisamos dos simuladores com as chaves PIN e CHIP configuradas. 
+	   > O especialista da Mastercard nos ajudou a configurar a chave PIN. 
+	   > Falta configurar a chave do CHIP. O Cleber conseguiu recuperar as chaves. Já passei para a Janine e Thiago.
+	   > Em caso de dificuldade na configuração do simulador da mastercard, pedir para a Thaynara nova janela com o especiliasta da Mastercard
+	   > Falta configurar o simulador da Visa.
+   - Mascaramento BIN 8 digitos
+     - o Guilherme vai puxar uma reunião com o time de dados para verificar se será montado o BIN 8 digitos no campo já existente no Mesh, ou se será criado um novo campo
 
+2. Modernização Single Message - Mensagens administrativas
+   - Falta configuração das chaves no simulador MAS (Dual Message) para validação das alterações
+   - Em caso de dificuldade na configuração do simulador da mastercard, pedir para a Thaynara nova janela com o especiliasta da Mastercard
+   - Há 4 histórias com este impedimento
 
-Cenário em que a bandeira dispara esta transação:
- 1. Quando o time do BKC Itaú cadastra uma disputa (Chargeback) na ferramenta Mastercard Connect
- 2. Ajuste de valor de transação comandado pela bandeira/adquirentes d-n. (após corte do base 2). Há bastante transações da Uber neste cenário.
+3. Release de Bandeiras
+   - Estimativa para o ambiente modernizado: 75 dias. Falta estimativa do ambiente legado
+   - O Thiago irá criar as histórias faltantes
+   - Desenolvimento já iniciado
 
- 
-Cacateristica: 
- - ONLINE: Apesar de no extrato gerar os 2 lançamentos de débito e crédito, o arquivo que é usado no contábil (TCX) é gravado apenas o lançamento do crédito (estorno do valor original)
- - BATCH: 
-    - Na madrugada por volta das 3h, é processado o arquivo contábil que foi gravado no online (TCX). Neste momento o que foi processo no batch é o que aparece no extrato, ou seja, os 2 lançamentos feito no online "somem" e aparece apenas o lançamento do crédito.
-    - O arquivo base 2 enviado pela Mastercard é processado as 9h30, e a partir dele é gerado 2 arquivos:
-	   1. MAB: Contem os 2 lançamentos (débito e crédito). Este arquivo entra na malha batch para fazer o contábil em definitivo.
-	   2. LTF: Contem os 2 lançamentos (débito e crédito). Este arquivo entra na malha batch para para atualizar o extrato com os 2 lançamentos, com término previsto para as 12h.
- 
- 
-Sobre a Alteração:
- - Motivo: Realease de Bandeiras - Pré Autorização
- - Alterado o tamanho (de 13 para 26) do campo DE 61 da ISO para o mti 0420, com alteração nos módulos:
-   1- Módulo assembler de configuração da ISO que fica instalado no ambiente CICS para realizar o parse da ISO.
-   2- Books dos módulos Cobol (ambiente GRBE) que processam a transação
+4. Modernização Visa - Contábil e Câmbio
+   - Ficou uma pendência nossa sobre o envio do campo tarifa da transação:
+     > Para a Visa e Mastercard o campo chega no campo 28. Porém não enviamos atualmenrte para o sistema C4.
+     > O Edson do sistema C4 ficou de nos informar qual o arquivo e campo eles recebem atualmente do sistema X0 (eu não consegui achar em nenhum lugar)3
+   - Cobrar o Alberto (DW6) para ele puxar uma reunião com as pessoas que faltam dar o de acordo para a criação dos roteiros e contas contábeis. Fiquei com algumas dúvidas no email de solicitação do "de acordo" do qual falta eles responderem ainda.
    
-Motivo do Erro:
- - Os módulos Cobol do ambiente GRBE tiveram o deploy antes do módulo Assembler de configuração da ISO do CICS.   
- - Somente depois de aprocimadamente 1 minuto após o deploy dos módulos Cobol (GRBE) que foi feito o deploy do módulo Assembler
- - Ainda precisamos entender se sempre foi assim, ou aconteceu algo extraordinário
- - Neste intervalo, tiveram 5 transações 644 com layout do trancode incompativel devido ao problema de sincronismo de deploy (CICS enviado layout antigo para os módulos GRBE já com o novo layout).
- - Isso fez com que o campo usado para fazer o débito ficasse desposicionado
- 
-Próximos passos:
- - Realizar Posmorten avalidando:
-   1. Negar e incluir alertas para transações com valores altos
-   2. Incluir consist~encias na ISO
-   3. Entender o problema do sincrnismo dos deploys entre CICS e GRBE (sempre foi assim, ou aconteceu algo extraordinário ?)
-   4. Modernizar a transação 644
+5- Data Only
+   - Pendencias: 
+     > Recriação da service do acl-integração. O Bazani iria recuperar a infra da main, e reprocessar esteira.
+	 > Testes integrados com o mainframe. Módulo mainframe esta no pacote 
+	 
+6- Datadog
+   - Alinhar com a liderança como trataremos o desenvolvimento. 
+   - Provavelmente teremos que pedir postergação.
+   - Pontos que teremos que desenvolver:
+   - Thiago e Alê alinhados com o assunto
    
-  
+7- Avisar Danilo da Mastercard a implantação do desligamento do DE 55 para transações Contactless Dual Message (há um email sobre isso)
+
+8- Ficar de olho no Gustavo, para ele implementar o quanto antes as alterações do De 126. O prazo dado para a Mastercard foi final de fevereiro. Avisar Aline Scarlet quando for implantado.
+
+9- Pré Autorização: Demos o prazo de final de fevereiro. Verificar com Nishi se será possível concluir o Decurso até la. Caso não, será necessário passar nova data.
+
+10. IU COnfia Resiliência: Verificar se teremos impactos.
