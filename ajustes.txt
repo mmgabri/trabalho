@@ -1,0 +1,64 @@
+RTEMAIL-HTML-HEADER
+
+ *--- abertura do header (border-left no lugar de barra td) ---
+           STRING
+             '<tr><td style="padding:24px 32px;'
+             'border-left:6px solid '
+                                DELIMITED BY SIZE
+             WS-TITULO-COR      DELIMITED BY '  '
+             ';">'              DELIMITED BY SIZE
+             '<table width="100%" cellpadding="0" '
+             'cellspacing="0" border="0">'
+                                DELIMITED BY SIZE
+             INTO WS-HTML-COMPLETO
+             WITH POINTER WS-POS
+           END-STRING.
+		   
+RTEMAIL-HTML-HEADER
+*--- titulo principal (cor varia conforme sucesso/falha) ---
+           STRING
+             '<tr><td style="font-family:'
+             '''Segoe UI'',Arial,sans-serif;'
+             'font-size:24px;color:'
+                                DELIMITED BY SIZE
+             WS-TITULO-COR      DELIMITED BY '  '
+             ';font-weight:700;line-height:1.2;">'
+                                DELIMITED BY SIZE
+             WS-TITULO          DELIMITED BY '  '
+             '</td></tr>'       DELIMITED BY SIZE
+             '</table></td></tr></table></td></tr>'
+                                DELIMITED BY SIZE
+             INTO WS-HTML-COMPLETO
+             WITH POINTER WS-POS
+           END-STRING.
+Substitua só a linha do fechamento. Procure por:
+cobol             '</table></td></tr></table></td></tr>'
+E troque por:
+cobol             '</table></td></tr>'
+
+RTEMAIL-HTML-CARD-MENSAGEM
+		   RTEMAIL-HTML-CARD-MENSAGEM      SECTION.
+
+           STRING
+             '<tr><td style="padding:20px 32px '
+             '28px 32px;">'
+             '<table width="100%" cellpadding="0" '
+             'cellspacing="0" border="0"><tr>'
+             '<td style="padding:4px 0 4px 16px;'
+             'border-left:3px solid #FF6B00;">'
+             '<div style="font-family:''Segoe UI'','
+             'Arial,sans-serif;font-size:11px;'
+             'color:#6b7280;text-transform:uppercase;'
+             'letter-spacing:0.8px;font-weight:700;'
+             'padding-bottom:6px;">Mensagem</div>'
+             '<div style="font-family:''Segoe UI'','
+             'Arial,sans-serif;font-size:14px;'
+             'color:#1f2937;line-height:1.6;">'
+                                DELIMITED BY SIZE
+             WS-MENSAGEM        DELIMITED BY '  '
+             '</div>'           DELIMITED BY SIZE
+             '</td></tr></table></td></tr>'
+                                DELIMITED BY SIZE
+             INTO WS-HTML-COMPLETO
+             WITH POINTER WS-POS
+           END-STRING.
